@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DualStream</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="brand-wrap">
+          <div class="brand-mark">DS</div>
+          <div>
+            <p class="eyebrow">Live monitoring</p>
+            <h1>DualStream</h1>
+          </div>
+        </div>
+        <div class="status-tag" id="secure-status">Checking…</div>
+      </header>
+
+      <main class="dashboard">
+        <section class="camera-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span class="live-dot"></span>
+              Camera 1
+            </div>
+            <span class="panel-state" id="cam1-status">Ready</span>
+          </div>
+
+          <div class="video-wrap">
+            <video id="video1" autoplay playsinline muted></video>
+            <div class="camera-overlay" id="overlay1">No signal</div>
+          </div>
+
+          <div class="actions">
+            <button class="primary" id="start1">Start stream</button>
+            <button class="ghost" id="stop1">Stop</button>
+          </div>
+
+          <div class="info-box">
+            <div><strong>Source:</strong> Local webcam</div>
+            <div><strong>Signal:</strong> <span id="signal1">Waiting</span></div>
+          </div>
+        </section>
+
+        <section class="camera-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span class="live-dot"></span>
+              Camera 2
+            </div>
+            <span class="panel-state" id="cam2-status">Ready</span>
+          </div>
+
+          <div class="video-wrap">
+            <video id="video2" autoplay playsinline muted></video>
+            <div class="camera-overlay" id="overlay2">No signal</div>
+          </div>
+
+          <div class="actions">
+            <button class="primary" id="start2">Start stream</button>
+            <button class="ghost" id="stop2">Stop</button>
+          </div>
+
+          <div class="info-box">
+            <div><strong>Source:</strong> Local webcam</div>
+            <div><strong>Signal:</strong> <span id="signal2">Waiting</span></div>
+          </div>
+        </section>
+      </main>
+
+      <aside class="summary-panel">
+        <div class="summary-header">
+          <h2>System status</h2>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-label">Connection</span>
+            <strong id="server-status">Checking...</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Protocol</span>
+            <strong id="protocol-status">Local</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Time</span>
+            <strong id="server-time">--:--:--</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Active streams</span>
+            <strong id="active-streams">0</strong>
+          </div>
+        </div>
+
+        <div class="error-box" id="error-box"></div>
+      </aside>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
