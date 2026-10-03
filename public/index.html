@@ -1,372 +1,358 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DualStream - Webcam Streaming</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DualStream</title>
+  <style>
+    :root {
+      --bg1: #0f172a;
+      --bg2: #1e293b;
+      --card: #fff;
+      --accent: #3b82f6;
+      --accent-2: #8b5cf6;
+      --success: #22c55e;
+      --error: #ef4444;
+      --text: #111827;
+      --muted: #6b7280;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: var(--text);
+      padding: 24px;
+    }
 
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
 
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
+    .topbar {
+      text-align: center;
+      margin-bottom: 24px;
+      color: white;
+    }
 
-        .security-badge {
-            display: inline-block;
-            background: rgba(76, 175, 80, 0.9);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: bold;
-        }
+    .topbar h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 3vw, 3rem);
+    }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
+    .status-pill {
+      display: inline-block;
+      background: rgba(34, 197, 94, 0.9);
+      color: white;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
 
-        .stream-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            transition: transform 0.3s;
-        }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(280px, 1fr));
+      gap: 20px;
+    }
 
-        .stream-card:hover {
-            transform: translateY(-5px);
-        }
+    .panel {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+      overflow: hidden;
+    }
 
-        .stream-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
+    .panel-header {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: white;
+      padding: 14px 18px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-        .stream-header h2 {
-            font-size: 1.3em;
-            margin-bottom: 5px;
-        }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--success);
+      display: inline-block;
+      margin-right: 8px;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+    }
 
-        .stream-status {
-            font-size: 0.85em;
-            opacity: 0.9;
-        }
+    .panel-body {
+      padding: 16px;
+    }
 
-        .stream-body {
-            padding: 20px;
-        }
+    video {
+      width: 100%;
+      display: block;
+      aspect-ratio: 16 / 9;
+      background: #111;
+      border-radius: 12px;
+      object-fit: cover;
+      margin-bottom: 12px;
+    }
 
-        .stream-placeholder {
-            background: #222;
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #888;
-            font-size: 1.1em;
-            margin-bottom: 15px;
-        }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
 
-        .stream-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
+    button {
+      flex: 1;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: white;
+      cursor: pointer;
+    }
 
-        button {
-            flex: 1;
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background 0.3s;
-        }
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
 
-        button:hover {
-            background: #764ba2;
-        }
+    .meta {
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 12px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
 
-        button:active {
-            transform: scale(0.98);
-        }
+    .meta strong { color: var(--text); }
 
-        .stream-info {
-            background: #f5f5f5;
-            padding: 12px;
-            border-radius: 5px;
-            font-size: 0.9em;
-            color: #666;
-            line-height: 1.5;
-        }
+    .summary {
+      margin-top: 20px;
+      background: white;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.14);
+    }
 
-        .stream-info strong {
-            color: #333;
-        }
+    .summary h2 {
+      margin-top: 0;
+    }
 
-        .status-panel {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 25px;
-            grid-column: 1 / -1;
-        }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
 
-        .status-panel h2 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
+    .stat {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 14px;
+    }
 
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-bottom: 6px;
+    }
 
-        .status-item {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
+    .stat-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
 
-        .status-label {
-            color: #666;
-            font-size: 0.85em;
-            font-weight: 500;
-            margin-bottom: 5px;
-        }
+    .error {
+      margin-top: 12px;
+      display: none;
+      background: #fef2f2;
+      color: var(--error);
+      border-left: 4px solid var(--error);
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
 
-        .status-value {
-            color: #333;
-            font-size: 1.1em;
-            font-weight: bold;
-        }
-
-        .status-value.success {
-            color: #4CAF50;
-        }
-
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 5px;
-            border-left: 4px solid #f44336;
-            display: none;
-            margin-top: 15px;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-
-            .header h1 {
-                font-size: 1.8em;
-            }
-        }
-
-        .loading {
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-    </style>
+    @media (max-width: 800px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🎥 DualStream</h1>
-        <p class="security-badge">🔒 Secure HTTPS Connection</p>
+  <div class="app">
+    <div class="topbar">
+      <h1>DualStream</h1>
+      <div class="status-pill">HTTPS Active</div>
     </div>
 
-    <div class="container">
-        <!-- Camera 1 Stream -->
-        <div class="stream-card">
-            <div class="stream-header">
-                <h2>📹 Camera 1</h2>
-                <div class="stream-status" id="camera1-status">Initializing...</div>
-            </div>
-            <div class="stream-body">
-                <div class="stream-placeholder" id="camera1-placeholder">
-                    📹 Webcam Stream 1
-                </div>
-                <div class="stream-controls">
-                    <button onclick="startStream(1)">▶️ Start</button>
-                    <button onclick="stopStream(1)">⏹️ Stop</button>
-                </div>
-                <div class="stream-info">
-                    <strong>Resolution:</strong> 1280x720<br>
-                    <strong>FPS:</strong> 30<br>
-                    <strong>Codec:</strong> H.264
-                </div>
-            </div>
+    <div class="grid">
+      <div class="panel">
+        <div class="panel-header">
+          <span>Camera 1</span>
+          <span><span class="dot"></span><span id="cam1-status">Ready</span></span>
         </div>
+        <div class="panel-body">
+          <video id="video1" autoplay playsinline muted></video>
+          <div class="controls">
+            <button id="start1">Start</button>
+            <button class="secondary" id="stop1">Stop</button>
+          </div>
+          <div class="meta">
+            <strong>Resolution:</strong> up to device default<br />
+            <strong>Codec:</strong> browser-selected H.264/VP8/WebM<br />
+            <strong>Mode:</strong> local webcam stream
+          </div>
+        </div>
+      </div>
 
-        <!-- Camera 2 Stream -->
-        <div class="stream-card">
-            <div class="stream-header">
-                <h2>📹 Camera 2</h2>
-                <div class="stream-status" id="camera2-status">Initializing...</div>
-            </div>
-            <div class="stream-body">
-                <div class="stream-placeholder" id="camera2-placeholder">
-                    📹 Webcam Stream 2
-                </div>
-                <div class="stream-controls">
-                    <button onclick="startStream(2)">▶️ Start</button>
-                    <button onclick="stopStream(2)">⏹️ Stop</button>
-                </div>
-                <div class="stream-info">
-                    <strong>Resolution:</strong> 1280x720<br>
-                    <strong>FPS:</strong> 30<br>
-                    <strong>Codec:</strong> H.264
-                </div>
-            </div>
+      <div class="panel">
+        <div class="panel-header">
+          <span>Camera 2</span>
+          <span><span class="dot"></span><span id="cam2-status">Ready</span></span>
         </div>
-
-        <!-- Status Panel -->
-        <div class="status-panel">
-            <h2>Server Status</h2>
-            <div class="status-grid">
-                <div class="status-item">
-                    <div class="status-label">Connection</div>
-                    <div class="status-value success" id="connection-status">Loading...</div>
-                </div>
-                <div class="status-item">
-                    <div class="status-label">Protocol</div>
-                    <div class="status-value success" id="protocol-status">HTTPS ✓</div>
-                </div>
-                <div class="status-item">
-                    <div class="status-label">Server Time</div>
-                    <div class="status-value" id="server-time">--:--:--</div>
-                </div>
-                <div class="status-item">
-                    <div class="status-label">Active Cameras</div>
-                    <div class="status-value" id="active-cameras">0</div>
-                </div>
-            </div>
-            <button onclick="checkServerStatus()" style="width: 100%; margin-top: 10px;">
-                🔄 Refresh Status
-            </button>
-            <div class="error-message" id="error-message"></div>
+        <div class="panel-body">
+          <video id="video2" autoplay playsinline muted></video>
+          <div class="controls">
+            <button id="start2">Start</button>
+            <button class="secondary" id="stop2">Stop</button>
+          </div>
+          <div class="meta">
+            <strong>Resolution:</strong> up to device default<br />
+            <strong>Codec:</strong> browser-selected H.264/VP8/WebM<br />
+            <strong>Mode:</strong> local webcam stream
+          </div>
         </div>
+      </div>
     </div>
 
-    <script>
-        let activeStreams = { 1: false, 2: false };
+    <div class="summary">
+      <h2>Server Status</h2>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Connection</div>
+          <div class="stat-value" id="server-status">Checking...</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Protocol</div>
+          <div class="stat-value">HTTPS</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Time</div>
+          <div class="stat-value" id="server-time">--:--:--</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Active streams</div>
+          <div class="stat-value" id="active-streams">0</div>
+        </div>
+      </div>
+      <div class="error" id="error-box"></div>
+    </div>
+  </div>
 
-        // Initialize on page load
-        window.addEventListener('load', () => {
-            checkServerStatus();
-            setInterval(updateTime, 1000);
-            updateCameraCount();
-        });
+  <script>
+    const streamMap = new Map();
+    const deviceIds = [];
 
-        function checkServerStatus() {
-            fetch('/api/status')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('connection-status').textContent = 'Connected ✓';
-                    document.getElementById('connection-status').classList.add('success');
-                    document.getElementById('server-time').textContent = new Date(data.timestamp).toLocaleTimeString();
-                    document.getElementById('error-message').style.display = 'none';
-                    
-                    // Fetch cameras
-                    return fetch('/api/cameras');
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('camera1-status').textContent = '● Online';
-                    document.getElementById('camera2-status').textContent = '● Online';
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('connection-status').textContent = 'Disconnected ✗';
-                    document.getElementById('connection-status').classList.remove('success');
-                    showError('Unable to connect to server');
-                });
+    async function getCameraDevices() {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cameras = devices.filter(d => d.kind === 'videoinput');
+      return cameras;
+    }
+
+    async function startCamera(cameraNumber) {
+      const videoElement = document.getElementById(`video${cameraNumber}`);
+      const statusEl = document.getElementById(`cam${cameraNumber}-status`);
+
+      try {
+        const cameras = await getCameraDevices();
+        const selected = cameras[cameraNumber - 1] || cameras[0];
+
+        if (!selected) {
+          throw new Error('No webcam found for this browser session');
         }
 
-        function startStream(cameraId) {
-            activeStreams[cameraId] = true;
-            updateCameraCount();
-            
-            const placeholder = document.getElementById(`camera${cameraId}-placeholder`);
-            placeholder.classList.add('loading');
-            placeholder.textContent = `📹 Streaming from Camera ${cameraId}...`;
-            
-            fetch(`/stream/${cameraId}`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Stream started:', data);
-                })
-                .catch(error => {
-                    showError(`Failed to start camera ${cameraId}: ` + error.message);
-                    activeStreams[cameraId] = false;
-                    updateCameraCount();
-                });
-        }
+        const constraints = {
+          video: {
+            deviceId: selected.deviceId ? { exact: selected.deviceId } : undefined,
+            facingMode: 'user'
+          },
+          audio: false
+        };
 
-        function stopStream(cameraId) {
-            activeStreams[cameraId] = false;
-            updateCameraCount();
-            
-            const placeholder = document.getElementById(`camera${cameraId}-placeholder`);
-            placeholder.classList.remove('loading');
-            placeholder.textContent = `📹 Webcam Stream ${cameraId}`;
-        }
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        videoElement.srcObject = stream;
+        streamMap.set(cameraNumber, stream);
+        statusEl.textContent = 'Live';
+        updateActiveCount();
+      } catch (error) {
+        showError(`Camera ${cameraNumber} could not start: ${error.message}`);
+        statusEl.textContent = 'Error';
+      }
+    }
 
-        function updateCameraCount() {
-            const count = Object.values(activeStreams).filter(v => v).length;
-            document.getElementById('active-cameras').textContent = count;
-        }
+    function stopCamera(cameraNumber) {
+      const stream = streamMap.get(cameraNumber);
+      const videoElement = document.getElementById(`video${cameraNumber}`);
+      const statusEl = document.getElementById(`cam${cameraNumber}-status`);
 
-        function updateTime() {
-            document.getElementById('server-time').textContent = new Date().toLocaleTimeString();
-        }
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        streamMap.delete(cameraNumber);
+      }
 
-        function showError(message) {
-            const errorEl = document.getElementById('error-message');
-            errorEl.textContent = '⚠️ ' + message;
-            errorEl.style.display = 'block';
-            setTimeout(() => {
-                errorEl.style.display = 'none';
-            }, 5000);
-        }
-    </script>
+      if (videoElement) {
+        videoElement.srcObject = null;
+      }
+
+      if (statusEl) {
+        statusEl.textContent = 'Ready';
+      }
+
+      updateActiveCount();
+    }
+
+    function updateActiveCount() {
+      document.getElementById('active-streams').textContent = String(streamMap.size);
+    }
+
+    function showError(message) {
+      const box = document.getElementById('error-box');
+      box.textContent = message;
+      box.style.display = 'block';
+      setTimeout(() => {
+        box.style.display = 'none';
+      }, 5000);
+    }
+
+    async function checkServerStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        document.getElementById('server-status').textContent = data.status === 'online' ? 'Connected' : 'Offline';
+        document.getElementById('server-time').textContent = new Date(data.timestamp).toLocaleTimeString();
+      } catch (error) {
+        document.getElementById('server-status').textContent = 'Offline';
+        showError('Server connection failed.');
+      }
+    }
+
+    document.getElementById('start1').addEventListener('click', () => startCamera(1));
+    document.getElementById('stop1').addEventListener('click', () => stopCamera(1));
+    document.getElementById('start2').addEventListener('click', () => startCamera(2));
+    document.getElementById('stop2').addEventListener('click', () => stopCamera(2));
+
+    checkServerStatus();
+    setInterval(checkServerStatus, 10000);
+    setInterval(() => {
+      document.getElementById('server-time').textContent = new Date().toLocaleTimeString();
+    }, 1000);
+  </script>
 </body>
 </html>
